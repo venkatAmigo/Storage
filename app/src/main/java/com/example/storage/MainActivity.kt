@@ -27,7 +27,9 @@ class MainActivity : AppCompatActivity() {
             readFromExternalFile()
         }
         checkExternalStorageState()
+        handleSharedPreferences()
     }
+
 
     private fun checkExternalStorageState() {
         if(Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED)
@@ -121,5 +123,16 @@ class MainActivity : AppCompatActivity() {
         Snackbar.make(this,binding.root,"file created",Snackbar.LENGTH_SHORT).show()
         file.writeBytes(image.readBytes())
         file.writeText(binding.fileContentEt.text.toString())
+    }
+
+    private fun handleSharedPreferences(){
+        if(Prefs.contains("SAMPLE")) {
+            Toast.makeText(this, "Already Here ${Prefs.getString("SAMPLE","")}", Toast.LENGTH_SHORT)
+                .show()
+        }else{
+            Prefs.putAny("SAMPLE", "temporary Value")
+            Toast.makeText(this, "Now stored in Preferences", Toast.LENGTH_SHORT)
+                .show()
+        }
     }
 }
