@@ -4,6 +4,7 @@ import android.graphics.BitmapFactory
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
+import android.os.Environment.DIRECTORY_PICTURES
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ShareCompat
@@ -62,29 +63,34 @@ class MainActivity : AppCompatActivity() {
         file.writeText(binding.fileContentEt.text.toString())
 
     }
+    private fun shareFile(){
+        val fileName = binding.fileNameEt.text.toString()
+        val parentPath = File(Environment.getExternalStorageDirectory(),"Pictures")
+        val fileData = File(parentPath,
+            fileName)
+        val uri = FileProvider.getUriForFile(this,"com.example.storage.provider",fileData)
+        Log.i("fileloc",uri.toString())
+        val intent = ShareCompat.IntentBuilder(this)
+            .setChooserTitle("Sharing file")
+            .setType("image/*")
+            .setStream(uri)
+            .createChooserIntent()
+        startActivity(intent)
+    }
     private fun readFromExternalFile() {
         try {
             val fileName = binding.fileNameEt.text.toString()
             val parentPath = File(Environment.getExternalStorageDirectory(),"Pictures")
             val fileData = File(parentPath,
                 fileName)
-            /*val fileData = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+           /* val fileData = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
                 fileName)*/
-            val uri = FileProvider.getUriForFile(this,"com.example.storage.provider",fileData)
-            Log.i("fileloc",uri.toString())
-            val intent = ShareCompat.IntentBuilder(this)
-                .setChooserTitle("Sharing file")
-                .setType("image/*")
-                .setStream(uri)
-                .createChooserIntent()
-            startActivity(intent)
             val bitmap = BitmapFactory.decodeStream(fileData.inputStream())
            binding.imageView.setImageBitmap(bitmap)
             Snackbar.make(this,binding.root,"file read",Snackbar.LENGTH_SHORT).show()
         }catch (exception:Exception){
             binding.fileContentTv.text = exception.localizedMessage
             Log.i("fileloc",exception.localizedMessage)
-
             Snackbar.make(this,binding.root,"file ${exception.localizedMessage}",Snackbar.LENGTH_SHORT).show()
         }
     }
@@ -93,13 +99,21 @@ class MainActivity : AppCompatActivity() {
         val fileName = binding.fileNameEt.text.toString()
         val image  = resources.openRawResource(R.raw.logoquest)
 
-        binding.fileContentTv.text = "public "+Environment.getExternalStoragePublicDirectory(Environment
+        val paths = "public "+Environment.getExternalStoragePublicDirectory(Environment
             .DIRECTORY_PICTURES).absolutePath +" \n external"+ Environment
             .getExternalStorageDirectory().absolutePath +"external files dir"+getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString()
+        binding.fileContentTv.text = paths
 
         val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),fileName)
 
+        /**
+         * for app specific external files
+         * val files = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES),fileName)
+         */
+
         val uri = FileProvider.getUriForFile(this,"${applicationContext.packageName}.provider",file)
+
+        //Get file location is file provider
         Log.i("fileloc",uri.toString())
         if(!file.exists()){
             file.createNewFile()
